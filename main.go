@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"os"
@@ -17,7 +16,9 @@ type DB struct {
 }
 
 func (db *DB) createShortLink(w http.ResponseWriter, r *http.Request) {
-	
+	tempReader := make([]byte, 1024)
+	n, _ := r.Body.Read(tempReader)
+	fmt.Println(string(tempReader[:n]))
 }
 
 func main() {
@@ -28,10 +29,8 @@ func main() {
 	}
 	db := &DB{conn}
 	db.Write([]byte("ShortUrlServer"))
-	server := http.Server{Addr: thisServerPort, Handler: nil}
-	http.Get()
-	http.Get("http://localhost:" + thisServerPort)
 	http.HandleFunc("/", db.createShortLink)
+	err = http.ListenAndServe("localhost:"+thisServerPort, nil)
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Println("server closed\n")
 	} else {
